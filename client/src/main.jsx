@@ -8,7 +8,7 @@ import Header from "./components/Header.jsx";
 
 import { AuthProvider } from "./auth.jsx";
 import AuthGuard from "./guards/AuthGuard.jsx";
-import AdminGuard from"./guards/AuthGuard.jsx";
+import AdminGuard from"./guards/AdminGuard.jsx";
 import GuestGuard from "./guards/GuestGuard.jsx";
 
 import CheckoutSuccess from "./pages/CheckoutSuccess.jsx";

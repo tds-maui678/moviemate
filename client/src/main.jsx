@@ -17,7 +17,7 @@ import LandingRedirect from "./LandingRedirect.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Movies from "./pages/Movies.jsx";
-import MovieShowtimes from "./pages/MovieShowTimes.jsx";
+import MovieShowtimes from "./pages/MovieShowtimes.jsx";
 import SeatSelect from "./pages/SeatSelect.jsx";
 import Tickets from "./pages/Tickets.jsx";
 import Profile from "./pages/Profile.jsx";

@@ -12,3 +12,9 @@ build/
 
 # Logs
 *.log
+
+.env
+node_modules/
+dist/
+build/
+*.log

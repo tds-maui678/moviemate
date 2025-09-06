@@ -51,11 +51,19 @@ router.post("/checkout", requireAuth, async (req, res) => {
 
     res.json({ sessionId: session.id });
   } catch (e) {
-    // ---- Better Stripe error surface (single response) ----
-    console.error("checkout error:", e);
-    const msg = e?.raw?.message || e?.message || "Failed to start checkout";
-    return res.status(400).json({ error: msg });
-  }
+    console.error("checkout error:", {
+            message: e?.message,
+            type: e?.type,
+            code: e?.code,
+            raw: e?.raw?.message,
+            hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+            clientOrigin: process.env.CLIENT_ORIGIN,
+            userId: req.user?.id,
+            bookingIds: req.body?.bookingIds,
+          });
+          const msg = e?.raw?.message || e?.message || "Failed to start checkout";
+          return res.status(400).json({ error: msg })
+  };
 });
 
 /** ---------- LOOKUP (used by success page) ---------- */

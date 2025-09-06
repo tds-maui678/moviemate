@@ -114,7 +114,8 @@ export default function SeatSelect() {
       const { error } = await stripe.redirectToCheckout({ sessionId: data.sessionId });
       if (error) setErr(error.message || "Stripe redirect failed");
     } catch (e) {
-      setErr(e?.response?.data?.error || "Failed to start checkout");
+      const msg = e?.response?.data?.error || e?.message || "Failed to start checkout";
+      setErr(msg);
     }
   }
 

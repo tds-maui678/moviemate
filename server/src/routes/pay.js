@@ -15,10 +15,15 @@ router.post("/checkout", requireAuth, async (req, res) => {
 
     const rows = await Booking.findAll({
       where: { id: bookingIds, UserId: req.user.id, status: "HELD" },
-      include: [{ model: Seat, include: [Auditorium] }, { model: Showtime, include: [Movie, Auditorium] }],
+      include: [
+        { model: Seat, include: [Auditorium] },
+        { model: Showtime, include: [Movie, Auditorium] },
+      ],
     });
 
-    if (rows.length !== bookingIds.length) return res.status(400).json({ error: "Some bookings are invalid" });
+    if (rows.length !== bookingIds.length) {
+      return res.status(400).json({ error: "Some bookings are invalid" });
+    }
 
     const movie = rows[0].Showtime.Movie;
     const quantity = rows.length;
@@ -46,10 +51,10 @@ router.post("/checkout", requireAuth, async (req, res) => {
 
     res.json({ sessionId: session.id });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: "Failed to start checkout" });
+    // ---- Better Stripe error surface (single response) ----
+    console.error("checkout error:", e);
     const msg = e?.raw?.message || e?.message || "Failed to start checkout";
-    res.status(400).json({ error: msg });
+    return res.status(400).json({ error: msg });
   }
 });
 
@@ -62,7 +67,9 @@ router.get("/lookup", requireAuth, async (req, res) => {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     if (!session) return res.status(404).json({ error: "Session not found" });
 
-    const bookingIds = String(session.metadata?.bookingIds || "").split(",").filter(Boolean);
+    const bookingIds = String(session.metadata?.bookingIds || "")
+      .split(",")
+      .filter(Boolean);
     if (!bookingIds.length) return res.status(404).json({ error: "No tickets for this session" });
 
     const tickets = await Booking.findAll({
@@ -70,7 +77,14 @@ router.get("/lookup", requireAuth, async (req, res) => {
       order: [["createdAt", "ASC"]],
       include: [
         { model: Seat, attributes: ["row", "number"], include: [Auditorium] },
-        { model: Showtime, attributes: ["startsAt"], include: [{ model: Movie, attributes: ["title", "rating", "durationMinutes"] }, { model: Auditorium, attributes: ["name"] }] },
+        {
+          model: Showtime,
+          attributes: ["startsAt"],
+          include: [
+            { model: Movie, attributes: ["title", "rating", "durationMinutes"] },
+            { model: Auditorium, attributes: ["name"] },
+          ],
+        },
       ],
     });
 
@@ -91,7 +105,9 @@ router.get("/lookup", requireAuth, async (req, res) => {
     res.json({ sessionId: session_id, tickets: payload });
   } catch (e) {
     console.error(e);
-    if (e.name === "ZodError") return res.status(400).json({ error: e.errors[0]?.message || "Bad request" });
+    if (e.name === "ZodError") {
+      return res.status(400).json({ error: e.errors[0]?.message || "Bad request" });
+    }
     res.status(500).json({ error: "Lookup failed" });
   }
 });
@@ -100,19 +116,29 @@ router.get("/lookup", requireAuth, async (req, res) => {
 export async function webhookHandler(req, res) {
   try {
     const sig = req.headers["stripe-signature"];
-    const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    const event = stripe.webhooks.constructEvent(
+      req.body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET
+    );
 
     console.log("[webhook] type:", event.type);
 
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
-      const ids = String(session.metadata?.bookingIds || "").split(",").filter(Boolean);
+      const ids = String(session.metadata?.bookingIds || "")
+        .split(",")
+        .filter(Boolean);
 
       if (ids.length) {
-        await Booking.update({ status: "CONFIRMED", expiresAt: null }, { where: { id: ids } });
+        await Booking.update(
+          { status: "CONFIRMED", expiresAt: null },
+          { where: { id: ids } }
+        );
         console.log("[webhook] confirmed bookings:", ids);
       }
     }
+
     res.json({ received: true });
   } catch (err) {
     console.error("Webhook error:", err.message);

@@ -36,7 +36,7 @@ export default function SeatSelect() {
 
     // Live updates
     const s = io(api.defaults.baseURL || "http://localhost:4000", {
-      withCredentials: true,
+      transports: ["websocket","polling"],
     });
     s.emit("join_showtime", id);
     s.on("seats_update", load);

@@ -1,4 +1,6 @@
 // server/src/config/db.js
+import dotenv from "dotenv";
+dotenv.config();
 import { Sequelize } from "sequelize";
 
 // helper: build a postgres URL from PG_* pieces

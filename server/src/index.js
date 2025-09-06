@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import http from "http";
 import { Server as IOServer } from "socket.io";
 import app from "./app.js";
@@ -13,8 +16,8 @@ import {
 } from "./models/index.js";
 
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
-dotenv.config();
+
+
 
 const PORT = process.env.PORT || 4000;
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:5173";

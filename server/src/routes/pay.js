@@ -48,6 +48,8 @@ router.post("/checkout", requireAuth, async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to start checkout" });
+    const msg = e?.raw?.message || e?.message || "Failed to start checkout";
+    res.status(400).json({ error: msg });
   }
 });
 

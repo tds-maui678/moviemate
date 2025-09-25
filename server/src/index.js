@@ -57,16 +57,6 @@ async function start() {
     await ensureAdmin();
     await seedDefaultAuditoriums();
 
-    // seed demo movie & showtime if missing
-    const [movie] = await Movie.findOrCreate({
-      where: { title: "The Sample Movie" },
-      defaults: {
-        description: "Demo movie",
-        durationMinutes: 120,
-        rating: "PG",
-        posterUrl: "",
-      },
-    });
 
     const hall1 = await Auditorium.findOne({ where: { name: "Hall 1" } });
     if (hall1) {

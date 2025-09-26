@@ -57,7 +57,6 @@ async function start() {
     await ensureAdmin();
     await seedDefaultAuditoriums();
 
-
     const hall1 = await Auditorium.findOne({ where: { name: "Hall 1" } });
     if (hall1) {
       const in1h = new Date(Date.now() + 60 * 60 * 1000);
